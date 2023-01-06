@@ -8,7 +8,7 @@ abstract class AbstractConstant
 
     public static function getText(string $constant): string
     {
-        return static::getTexts()[$constant] ?? '';
+        return static::getTexts()[$constant] ?? ''; // have to fix
     }
 
     public function isValid($value): bool

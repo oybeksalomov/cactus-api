@@ -1,6 +1,6 @@
 api_platform:
     title: 'Cactus API'
-    description: 'API for cactus project'
+    description: 'API for cactus-project'
     version: '0.0.1'
 
     mapping:
