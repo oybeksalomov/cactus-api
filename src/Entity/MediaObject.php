@@ -17,6 +17,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 /**
  * @Vich\Uploadable
  */
+#[Vich\Uploadable]
 #[ORM\Entity]
 #[ApiResource(
     collectionOperations: [
@@ -48,6 +49,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     itemOperations: ['get'],
     normalizationContext: ['groups' => ['media_object:read']]
 )]
+
 class MediaObject
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
@@ -60,6 +62,7 @@ class MediaObject
     /**
      * @Vich\UploadableField(mapping="media_object", fileNameProperty="filePath")
      */
+    #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]
     #[Assert\NotNull(groups: ['media_object_create'])]
     public ?File $file = null;
 
