@@ -143,9 +143,21 @@ class User implements
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Post::class)]
     private $posts;
 
+    #[ORM\OneToMany(mappedBy: 'withUser', targetEntity: Chat::class)]
+    private $chats;
+
+    #[ORM\OneToMany(mappedBy: 'forUser', targetEntity: Notification::class)]
+    private $notifications;
+
+    #[ORM\OneToMany(mappedBy: 'follow', targetEntity: Subscription::class)]
+    private $subscriptions;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
+        $this->chats = new ArrayCollection();
+        $this->notifications = new ArrayCollection();
+        $this->subscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -295,6 +307,96 @@ class User implements
             // set the owning side to null (unless already changed)
             if ($post->getUser() === $this) {
                 $post->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Chat>
+     */
+    public function getChats(): Collection
+    {
+        return $this->chats;
+    }
+
+    public function addChat(Chat $chat): self
+    {
+        if (!$this->chats->contains($chat)) {
+            $this->chats[] = $chat;
+            $chat->setWithUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChat(Chat $chat): self
+    {
+        if ($this->chats->removeElement($chat)) {
+            // set the owning side to null (unless already changed)
+            if ($chat->getWithUser() === $this) {
+                $chat->setWithUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): self
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications[] = $notification;
+            $notification->setForUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): self
+    {
+        if ($this->notifications->removeElement($notification)) {
+            // set the owning side to null (unless already changed)
+            if ($notification->getForUser() === $this) {
+                $notification->setForUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Subscription>
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscription $subscription): self
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions[] = $subscription;
+            $subscription->setFollow($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): self
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            // set the owning side to null (unless already changed)
+            if ($subscription->getFollow() === $this) {
+                $subscription->setFollow(null);
             }
         }
 

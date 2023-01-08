@@ -7,16 +7,16 @@ use App\Entity\Interfaces\CreatedAtSettableInterface;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
 use App\Entity\Interfaces\UpdatedAtSettableInterface;
 use App\Entity\Interfaces\UserSettableInterface;
-use App\Repository\PostRepository;
+use App\Repository\StoryRepository;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-#[ORM\Entity(repositoryClass: PostRepository::class)]
+#[ORM\Entity(repositoryClass: StoryRepository::class)]
 #[ApiResource]
-class Post implements
+class Story implements
     UserSettableInterface,
     CreatedAtSettableInterface,
     UpdatedAtSettableInterface,
@@ -30,11 +30,11 @@ class Post implements
     #[ORM\ManyToOne(targetEntity: MediaObject::class)]
     private $media;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private $text;
+    #[ORM\Column(type: 'string', length: 6)]
+    private $bgColor;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private $likesCount;
+    #[ORM\OneToMany(mappedBy: 'story', targetEntity: StoryText::class)]
+    private $storyTexts;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
@@ -49,19 +49,9 @@ class Post implements
     #[ORM\Column(type: 'boolean')]
     private $isDeleted = false;
 
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: PostLike::class)]
-    private $likes;
-
-    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Comment::class)]
-    private $comments;
-
-    #[ORM\Column(type: 'integer')]
-    private $commentsCount;
-
     public function __construct()
     {
-        $this->likes = new ArrayCollection();
-        $this->comments = new ArrayCollection();
+        $this->storyTexts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,26 +71,44 @@ class Post implements
         return $this;
     }
 
-    public function getText(): ?string
+    public function getBgColor(): ?string
     {
-        return $this->text;
+        return $this->bgColor;
     }
 
-    public function setText(?string $text): self
+    public function setBgColor(string $bgColor): self
     {
-        $this->text = $text;
+        $this->bgColor = $bgColor;
 
         return $this;
     }
 
-    public function getLikesCount(): ?int
+    /**
+     * @return Collection<int, StoryText>
+     */
+    public function getStoryTexts(): Collection
     {
-        return $this->likesCount;
+        return $this->storyTexts;
     }
 
-    public function setLikesCount(?int $likesCount): self
+    public function addStoryText(StoryText $storyText): self
     {
-        $this->likesCount = $likesCount;
+        if (!$this->storyTexts->contains($storyText)) {
+            $this->storyTexts[] = $storyText;
+            $storyText->setStory($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStoryText(StoryText $storyText): self
+    {
+        if ($this->storyTexts->removeElement($storyText)) {
+            // set the owning side to null (unless already changed)
+            if ($storyText->getStory() === $this) {
+                $storyText->setStory(null);
+            }
+        }
 
         return $this;
     }
@@ -156,77 +164,5 @@ class Post implements
     public function setUpdatedAt(DateTimeInterface $dateTime)
     {
         // TODO: Implement setUpdatedAt() method.
-    }
-
-    /**
-     * @return Collection<int, PostLike>
-     */
-    public function getLikes(): Collection
-    {
-        return $this->likes;
-    }
-
-    public function addLike(PostLike $like): self
-    {
-        if (!$this->likes->contains($like)) {
-            $this->likes[] = $like;
-            $like->setPost($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLike(PostLike $like): self
-    {
-        if ($this->likes->removeElement($like)) {
-            // set the owning side to null (unless already changed)
-            if ($like->getPost() === $this) {
-                $like->setPost(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Comment>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comment $comment): self
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments[] = $comment;
-            $comment->setPost($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComment(Comment $comment): self
-    {
-        if ($this->comments->removeElement($comment)) {
-            // set the owning side to null (unless already changed)
-            if ($comment->getPost() === $this) {
-                $comment->setPost(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getCommentsCount(): ?int
-    {
-        return $this->commentsCount;
-    }
-
-    public function setCommentsCount(int $commentsCount): self
-    {
-        $this->commentsCount = $commentsCount;
-
-        return $this;
     }
 }
