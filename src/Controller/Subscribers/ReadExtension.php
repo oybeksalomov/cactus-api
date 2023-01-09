@@ -6,6 +6,7 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryCollectionExtensionInter
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Extension\QueryItemExtensionInterface;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use App\Controller\Base\AbstractController;
+use App\Entity\Chat;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
 use Doctrine\ORM\QueryBuilder;
 
@@ -77,10 +78,10 @@ class ReadExtension extends AbstractController implements QueryCollectionExtensi
 //                $this->joinEntityAndAddUser($queryBuilder, $rootTable, 'company');
 //                $this->hideDeleted($queryBuilder, "company");
 //                break;
-//
-//            case Company::class:
-//                $this->addUser($queryBuilder, $rootTable);
-//                break;
+            // Faqat ushbu foydalanuvchiga tegishli chatlarni ol
+            case Chat::class:
+                $this->addUser($queryBuilder, $rootTable);
+                break;
         }
     }
 

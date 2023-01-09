@@ -122,6 +122,7 @@ class User implements
     private $email;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Assert\Length(min: 6)]
     #[Groups(['user:write', 'user:changePassword:write'])]
     private $password;
 

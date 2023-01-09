@@ -44,7 +44,7 @@ class Story implements
     private $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private $updateAt;
+    private $updatedAt;
 
     #[ORM\Column(type: 'boolean')]
     private $isDeleted = false;
@@ -125,31 +125,31 @@ class Story implements
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function getCreatedAt(): ?DateTimeInterface
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    public function setCreatedAt(DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getUpdateAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?DateTimeInterface
     {
-        return $this->updateAt;
+        return $this->updatedAt;
     }
 
-    public function setUpdateAt(?\DateTimeInterface $updateAt): self
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
     {
-        $this->updateAt = $updateAt;
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function isIsDeleted(): ?bool
+    public function getIsDeleted(): ?bool
     {
         return $this->isDeleted;
     }
@@ -159,10 +159,5 @@ class Story implements
         $this->isDeleted = $isDeleted;
 
         return $this;
-    }
-
-    public function setUpdatedAt(DateTimeInterface $dateTime)
-    {
-        // TODO: Implement setUpdatedAt() method.
     }
 }
