@@ -8,6 +8,8 @@ use ApiPlatform\Core\Bridge\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use App\Controller\Base\AbstractController;
 use App\Entity\Chat;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
+use App\Entity\Message;
+use App\Entity\Notification;
 use Doctrine\ORM\QueryBuilder;
 
 /**
@@ -81,6 +83,18 @@ class ReadExtension extends AbstractController implements QueryCollectionExtensi
             // Faqat ushbu foydalanuvchiga tegishli chatlarni ol
             case Chat::class:
                 $this->addUser($queryBuilder, $rootTable);
+                break;
+
+            case Notification::class:
+
+                $queryBuilder->andWhere("({$rootTable}.forUser = :user or {$rootTable}.forUser = null)");
+                $queryBuilder->setParameter("user", $this->getUser());
+                break;
+
+            case Message::class:
+                $queryBuilder->join("{$rootTable}.chat", 'chat');
+                $queryBuilder->andWhere("({$rootTable}.user = :user or {$rootTable}.chat.withUser = :user)");
+                $queryBuilder->setParameter("user", $this->getUser());
                 break;
         }
     }

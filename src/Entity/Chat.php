@@ -42,7 +42,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
     normalizationContext: ['groups' => ['chat:read', 'chats:read']],
 )]
 #[ApiFilter(OrderFilter::class, properties: ['id', 'createdAt', 'updatedAt', 'email'])]
-#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'nickname' => 'partial'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact'])]
 class Chat implements
     UserSettableInterface,
     CreatedAtSettableInterface,
@@ -64,7 +64,7 @@ class Chat implements
     #[Groups(['chat:read', 'chat:write'])]
     private $messages;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')] // have to change posts to chats
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['chats:read'])]
     private $user;

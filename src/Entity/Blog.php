@@ -70,7 +70,7 @@ class Blog implements
     #[Groups(['blog:read', 'blog:write'])]
     private $nickname;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'blogs')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 

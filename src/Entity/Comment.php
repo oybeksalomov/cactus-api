@@ -2,7 +2,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\DeleteAction;
 use App\Entity\Interfaces\CreatedAtSettableInterface;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
 use App\Entity\Interfaces\UpdatedAtSettableInterface;
@@ -13,9 +17,31 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['comments:read']]
+        ],
+    ],
+    itemOperations: [
+        'get' => [
+        ],
+        'put' => [
+            'security' => "object.getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'delete' => [
+            'controller' => DeleteAction::class,
+            'security' => "object.getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+    ],
+    denormalizationContext: ['groups' => ['comment:write']],
+    normalizationContext: ['groups' => ['comment:read', 'comments:read']],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['id', 'createdAt', 'updatedAt', 'email'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'post' => 'exact'])]
 class Comment implements
     UserSettableInterface,
     CreatedAtSettableInterface,
@@ -25,29 +51,37 @@ class Comment implements
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['comments:read'])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: Post::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['comment:read', 'comment:write'])]
     private $post;
 
     #[ORM\Column(type: 'text')]
+    #[Groups(['comments:read', 'comment:write'])]
     private $text;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['comments:read'])]
     private $likesCount;
 
     #[ORM\OneToMany(mappedBy: 'comment', targetEntity: CommentLike::class)]
+    #[Groups(['comment:read'])]
     private $likes;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')] //changed
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['comments:read'])]
     private $user;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['comment:read'])]
     private $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['comment:read'])]
     private $updatedAt;
 
     #[ORM\Column(type: 'boolean')]

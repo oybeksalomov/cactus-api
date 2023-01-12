@@ -153,6 +153,10 @@ class User implements
     #[ORM\OneToMany(mappedBy: 'follow', targetEntity: Subscription::class)]
     private $subscriptions;
 
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Person::class)]
+    #[Groups(['comments:read', 'commentLikes:read', 'messages:read'])]
+    private $persons;
+
     public function __construct()
     {
         $this->posts = new ArrayCollection();
@@ -399,6 +403,24 @@ class User implements
             if ($subscription->getFollow() === $this) {
                 $subscription->setFollow(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Person>
+     */
+    public function getPersons(): Collection
+    {
+        return $this->persons;
+    }
+
+    public function addPerson(Person $person): self
+    {
+        if (!$this->persons->contains($person)) {
+            $this->persons[] = $person;
+            $person->setUser($this);
         }
 
         return $this;

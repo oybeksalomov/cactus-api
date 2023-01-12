@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\TextMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TextMessageRepository::class)]
 #[ApiResource]
@@ -13,9 +14,11 @@ class TextMessage
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['messages:read'])]
     private $id;
 
     #[ORM\Column(type: 'text')]
+    #[Groups(['messages:read'])]
     private $text;
 
     #[ORM\ManyToOne(targetEntity: Message::class, inversedBy: 'textMessages')]

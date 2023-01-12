@@ -2,7 +2,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\DeleteAction;
 use App\Entity\Interfaces\CreatedAtSettableInterface;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
 use App\Entity\Interfaces\UpdatedAtSettableInterface;
@@ -13,9 +17,35 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['messages:read']]
+        ],
+        'post' => [
+            // todo: controller
+        ]
+    ],
+    itemOperations: [
+        'get' => [
+            'security' => "object.getUser() == user || object.getChat().getWithUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'put' => [
+            'security' => "object.getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'delete' => [
+            'controller' => DeleteAction::class,
+            'security' => "object.getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+    ],
+    denormalizationContext: ['groups' => ['message:write']],
+    normalizationContext: ['groups' => ['message:read', 'messages:read']],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['id', 'createdAt', 'updatedAt', 'email'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'post' => 'exact'])]
 class Message implements
     UserSettableInterface,
     CreatedAtSettableInterface,
@@ -29,25 +59,32 @@ class Message implements
 
     #[ORM\ManyToOne(targetEntity: Chat::class, inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['messages:read', 'message:write'])]
     private $chat;
 
     #[ORM\Column(type: 'smallint')]
+    #[Groups(['messages:read', 'message:write'])]
     private $type;
 
     #[ORM\OneToMany(mappedBy: 'message', targetEntity: MediaMessage::class)]
+    #[Groups(['messages:read', 'message:write'])]
     private $mediaMessages;
 
     #[ORM\OneToMany(mappedBy: 'message', targetEntity: TextMessage::class)]
+    #[Groups(['messages:read', 'message:write'])]
     private $textMessages;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['messages:read'])]
     private $user;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['messages:read'])]
     private $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['messages:read'])]
     private $updatedAt;
 
     #[ORM\Column(type: 'boolean')]

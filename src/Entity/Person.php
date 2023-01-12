@@ -11,6 +11,7 @@ use App\Repository\PersonRepository;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PersonRepository::class)]
 #[ApiResource]
@@ -26,9 +27,11 @@ class Person implements
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['comments:read', 'commentLikes:read', 'messages:read'])]
     private $givenName;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['comments:read', 'commentLikes:read', 'messages:read'])]
     private $familyName;
 
     #[ORM\Column(type: 'date', nullable: true)]
@@ -47,7 +50,7 @@ class Person implements
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $city;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'persons')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 

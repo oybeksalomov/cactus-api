@@ -35,7 +35,8 @@ class WriteSubscriber extends AbstractController implements EventSubscriberInter
                 break;
 
             case Request::METHOD_PUT:
-                $this->update($model);
+            case Request::METHOD_PATCH:
+            $this->update($model);
                 break;
         }
     }
