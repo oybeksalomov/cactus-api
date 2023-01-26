@@ -2,7 +2,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\DeleteAction;
 use App\Entity\Interfaces\CreatedAtSettableInterface;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
 use App\Entity\Interfaces\UpdatedAtSettableInterface;
@@ -11,9 +15,34 @@ use App\Repository\SavedPostRepository;
 use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: SavedPostRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['savedPosts:read']]
+        ],
+        'post' => [
+        ],
+    ],
+    itemOperations: [
+        'get' => [
+            'security' => "object.getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'put' => [
+            'security' => "object.getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'delete' => [
+            'controller' => DeleteAction::class,
+            'security' => "is_granted('ROLE_ADMIN')",
+        ],
+    ],
+    denormalizationContext: ['groups' => ['savedPost:write']],
+    normalizationContext: ['groups' => ['savedPost:read', 'savedPosts:read']],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['id', 'createdAt', 'updatedAt', 'email'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'post' => 'exact'])]
 class SavedPost implements
     UserSettableInterface,
     CreatedAtSettableInterface,
@@ -23,20 +52,25 @@ class SavedPost implements
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['savedPosts:read'])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: Post::class)]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['savedPosts:read', 'savedPost:write'])]
     private $post;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['savedPosts:read', 'savedPost:write'])]
     private $user;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['savedPosts:read'])]
     private $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['savedPosts:read'])]
     private $updatedAt;
 
     #[ORM\Column(type: 'boolean')]

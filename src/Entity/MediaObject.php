@@ -49,25 +49,21 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
     itemOperations: ['get'],
     normalizationContext: ['groups' => ['media_object:read']]
 )]
-
 class MediaObject
 {
-    #[ORM\Id, ORM\Column, ORM\GeneratedValue]
-    private ?int $id = null;
-
     #[ApiProperty(iri: 'https://schema.org/contentUrl')]
-    #[Groups(['media_object:read'])]
+    #[Groups(['media_object:read', 'posts:read', 'stories:read', 'mediaMessages:read'])]
     public ?string $contentUrl = null;
-
     /**
      * @Vich\UploadableField(mapping="media_object", fileNameProperty="filePath")
      */
     #[Vich\UploadableField(mapping: 'media_object', fileNameProperty: 'filePath')]
     #[Assert\NotNull(groups: ['media_object_create'])]
     public ?File $file = null;
-
     #[ORM\Column(nullable: true)]
     public ?string $filePath = null;
+    #[ORM\Id, ORM\Column, ORM\GeneratedValue]
+    private ?int $id = null;
 
     public function getId(): ?int
     {

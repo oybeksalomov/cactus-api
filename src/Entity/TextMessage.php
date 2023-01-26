@@ -2,13 +2,38 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\DeleteAction;
 use App\Repository\TextMessageRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TextMessageRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+        ],
+    ],
+    itemOperations: [
+        'get' => [
+            'security' => "object.getMessage().getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'put' => [
+            'security' => "object.getMessage().getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'delete' => [
+            'controller' => DeleteAction::class,
+            'security' => "object.getMessage().getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+    ],
+    denormalizationContext: ['groups' => ['textMessage:write']],
+    normalizationContext: ['groups' => ['textMessage:read', 'textMessages:read']],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['id'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact'])]
 class TextMessage
 {
     #[ORM\Id]

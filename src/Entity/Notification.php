@@ -21,6 +21,9 @@ use Symfony\Component\Serializer\Annotation\Groups;
         'get' => [
             'normalization_context' => ['groups' => ['notifications:read']]
         ],
+        'post' => [
+            'security' => "is_granted('ROLE_ADMIN')",
+        ],
     ],
     itemOperations: [
         'get' => [

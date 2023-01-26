@@ -30,19 +30,19 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
     collectionOperations: [
-        'get'                => [
-            'security'              => "is_granted('ROLE_ADMIN')",
+        'get' => [
+            'security' => "is_granted('ROLE_ADMIN')",
             'normalization_context' => ['groups' => ['users:read']],
         ],
-        'post'               => [
+        'post' => [
             'controller' => UserCreateAction::class,
         ],
-        'aboutMe'            => [
-            'controller'      => UserAboutMeAction::class,
-            'method'          => 'get',
-            'path'            => 'users/about_me',
+        'aboutMe' => [
+            'controller' => UserAboutMeAction::class,
+            'method' => 'get',
+            'path' => 'users/about_me',
             'openapi_context' => [
-                'summary'    => 'Shows info about the authenticated user',
+                'summary' => 'Shows info about the authenticated user',
 //                'parameters' => [
 //                    [
 //                        'in'       => 'query',
@@ -54,45 +54,45 @@ use Symfony\Component\Validator\Constraints as Assert;
 //                ],
             ],
         ],
-        'auth'               => [
-            'controller'      => UserAuthAction::class,
-            'method'          => 'post',
-            'path'            => 'users/auth',
+        'auth' => [
+            'controller' => UserAuthAction::class,
+            'method' => 'post',
+            'path' => 'users/auth',
             'openapi_context' => ['summary' => 'Authorization'],
         ],
         'authByRefreshToken' => [
-            'controller'      => UserAuthByRefreshTokenAction::class,
-            'method'          => 'post',
-            'path'            => 'users/auth/refreshToken',
+            'controller' => UserAuthByRefreshTokenAction::class,
+            'method' => 'post',
+            'path' => 'users/auth/refreshToken',
             'openapi_context' => ['summary' => 'Authorization by refreshToken'],
-            'input'           => RefreshTokenRequestDto::class,
+            'input' => RefreshTokenRequestDto::class,
         ],
-        'isUniqueEmail'      => [
-            'controller'              => UserIsUniqueEmailAction::class,
-            'method'                  => 'post',
-            'path'                    => 'users/is_unique_email',
-            'openapi_context'         => ['summary' => 'Checks email for uniqueness'],
+        'isUniqueEmail' => [
+            'controller' => UserIsUniqueEmailAction::class,
+            'method' => 'post',
+            'path' => 'users/is_unique_email',
+            'openapi_context' => ['summary' => 'Checks email for uniqueness'],
             'denormalization_context' => ['groups' => ['user:isUniqueEmail:write']],
         ],
     ],
     itemOperations: [
-        'get'            => [
+        'get' => [
             'security' => "object == user || is_granted('ROLE_ADMIN')",
         ],
-        'put'            => [
-            'security'                => "object == user || is_granted('ROLE_ADMIN')",
+        'put' => [
+            'security' => "object == user || is_granted('ROLE_ADMIN')",
             'denormalization_context' => ['groups' => ['user:put:write']],
         ],
-        'delete'         => [
+        'delete' => [
             'controller' => DeleteAction::class,
-            'security'   => "object == user || is_granted('ROLE_ADMIN')",
+            'security' => "object == user || is_granted('ROLE_ADMIN')",
         ],
         'changePassword' => [
-            'controller'              => UserChangePasswordAction::class,
-            'method'                  => 'put',
-            'path'                    => 'users/{id}/password',
-            'security'                => "object == user || is_granted('ROLE_ADMIN')",
-            'openapi_context'         => ['summary' => 'Changes password'],
+            'controller' => UserChangePasswordAction::class,
+            'method' => 'put',
+            'path' => 'users/{id}/password',
+            'security' => "object == user || is_granted('ROLE_ADMIN')",
+            'openapi_context' => ['summary' => 'Changes password'],
             'denormalization_context' => ['groups' => ['user:changePassword:write']],
         ],
     ],
@@ -154,7 +154,16 @@ class User implements
     private $subscriptions;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Person::class)]
-    #[Groups(['comments:read', 'commentLikes:read', 'messages:read'])]
+    #[Groups([
+        'comments:read',
+        'commentLikes:read',
+        'messages:read',
+        'posts:read',
+        'postLikes:read',
+        'savedPosts:read',
+        'stories:read',
+        'subscriptions:read',
+    ])]
     private $persons;
 
     public function __construct()
@@ -163,11 +172,6 @@ class User implements
         $this->chats = new ArrayCollection();
         $this->notifications = new ArrayCollection();
         $this->subscriptions = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
     }
 
     public function getPassword(): ?string
@@ -286,6 +290,11 @@ class User implements
     public function getUserIdentifier(): string
     {
         return (string)$this->getId();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     /**

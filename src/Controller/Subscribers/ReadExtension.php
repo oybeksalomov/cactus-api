@@ -10,6 +10,7 @@ use App\Entity\Chat;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
 use App\Entity\Message;
 use App\Entity\Notification;
+use App\Entity\SavedPost;
 use Doctrine\ORM\QueryBuilder;
 
 /**
@@ -82,11 +83,11 @@ class ReadExtension extends AbstractController implements QueryCollectionExtensi
 //                break;
             // Faqat ushbu foydalanuvchiga tegishli chatlarni ol
             case Chat::class:
+            case SavedPost::class:
                 $this->addUser($queryBuilder, $rootTable);
                 break;
 
             case Notification::class:
-
                 $queryBuilder->andWhere("({$rootTable}.forUser = :user or {$rootTable}.forUser = null)");
                 $queryBuilder->setParameter("user", $this->getUser());
                 break;

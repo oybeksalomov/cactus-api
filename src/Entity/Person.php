@@ -27,11 +27,27 @@ class Person implements
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['comments:read', 'commentLikes:read', 'messages:read'])]
+    #[Groups(['comments:read',
+        'commentLikes:read',
+        'messages:read',
+        'posts:read',
+        'postLikes:read',
+        'savedPosts:read',
+        'stories:read',
+        'subscriptions:read',
+    ])]
     private $givenName;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['comments:read', 'commentLikes:read', 'messages:read'])]
+    #[Groups(['comments:read',
+        'commentLikes:read',
+        'messages:read',
+        'posts:read',
+        'postLikes:read',
+        'savedPosts:read',
+        'stories:read',
+        'subscriptions:read',
+    ])]
     private $familyName;
 
     #[ORM\Column(type: 'date', nullable: true)]

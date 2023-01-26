@@ -2,7 +2,11 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\DeleteAction;
 use App\Entity\Interfaces\CreatedAtSettableInterface;
 use App\Entity\Interfaces\IsDeletedSettableInterface;
 use App\Entity\Interfaces\UpdatedAtSettableInterface;
@@ -13,9 +17,33 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['posts:read']]
+        ],
+        'post' => [
+        ],
+    ],
+    itemOperations: [
+        'get' => [
+        ],
+        'put' => [
+            'security' => "object.getUser() == user || is_granted('ROLE_ADMIN')",
+        ],
+        'delete' => [
+            'controller' => DeleteAction::class,
+            'security' => "is_granted('ROLE_ADMIN')",
+        ],
+    ],
+    denormalizationContext: ['groups' => ['post:write']],
+    normalizationContext: ['groups' => ['post:read', 'posts:read']],
+)]
+#[ApiFilter(OrderFilter::class, properties: ['id', 'createdAt', 'updatedAt', 'email'])]
+#[ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'post' => 'exact'])]
 class Post implements
     UserSettableInterface,
     CreatedAtSettableInterface,
@@ -25,25 +53,32 @@ class Post implements
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(['posts:read'])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: MediaObject::class)]
+    #[Groups(['posts:read', 'post:write'])]
     private $media;
 
     #[ORM\Column(type: 'text', nullable: true)]
+    #[Groups(['posts:read', 'post:write'])]
     private $text;
 
     #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(['posts:read'])]
     private $likesCount;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['posts:read'])]
     private $user;
 
     #[ORM\Column(type: 'datetime')]
+    #[Groups(['posts:read'])]
     private $createdAt;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
+    #[Groups(['posts:read'])]
     private $updatedAt;
 
     #[ORM\Column(type: 'boolean')]
@@ -56,6 +91,7 @@ class Post implements
     private $comments;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(['posts:read'])]
     private $commentsCount;
 
     public function __construct()
